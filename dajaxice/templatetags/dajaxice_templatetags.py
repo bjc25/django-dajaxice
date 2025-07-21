@@ -3,10 +3,10 @@ import logging
 from django import template
 from django.middleware.csrf import get_token
 from django.conf import settings
-from django.core.files.storage import get_storage_class
+from django.core.files.storage import storages
 from django.utils.html import format_html
 
-staticfiles_storage = get_storage_class(settings.STATICFILES_STORAGE)()
+staticfiles_storage = storages["staticfiles"]
 
 register = template.Library()
 
