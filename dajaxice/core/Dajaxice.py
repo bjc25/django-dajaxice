@@ -1,10 +1,5 @@
 import logging
-
-try:
-    from importlib import import_module
-except ImportError:
-    # We are using Django < 2.7
-    from django.utils.importlib import import_module
+from importlib import import_module
 
 log = logging.getLogger('dajaxice')
 
@@ -121,7 +116,7 @@ def dajaxice_autodiscover():
         return
     LOADING_DAJAXICE = True
 
-    import imp
+    from importlib.util import find_spec
     from django.conf import settings
 
     for app in settings.INSTALLED_APPS:
@@ -131,11 +126,16 @@ def dajaxice_autodiscover():
         except AttributeError:
             continue
 
+        name = f"{app}.ajax"
+
         try:
-            imp.find_module('ajax', app_path)
-        except ImportError:
+            spec = find_spec(name)
+        except ModuleNotFoundError:
             continue
 
-        import_module("%s.ajax" % app)
+        if not spec:
+            continue
+
+        import_module(name)
 
     LOADING_DAJAXICE = False
