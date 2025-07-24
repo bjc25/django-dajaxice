@@ -5,6 +5,7 @@ import json
 from django.views.generic.base import View
 from django.http import HttpResponse, Http404
 from distutils.version import StrictVersion
+import six
 
 from dajaxice.exceptions import FunctionNotCallableError
 from dajaxice.core import dajaxice_functions, dajaxice_config
@@ -18,7 +19,7 @@ def safe_dict(d):
     http://www.gossamer-threads.com/lists/python/bugs/684379
     """
     if isinstance(d, dict):
-        return dict([(k.encode('utf-8'), safe_dict(v)) for k, v in d.iteritems()])
+        return dict([(str(k), safe_dict(v)) for k, v in six.iteritems(d)])
     elif isinstance(d, list):
         return [safe_dict(x) for x in d]
     else:
@@ -43,7 +44,8 @@ class DajaxiceRequest(View):
             if data != 'undefined':
                 try:
                     data = safe_dict(json.loads(data))
-                except Exception:
+                except Exception as e:
+                    log.exception("Error parsing data", exc_info=e)
                     data = {}
             else:
                 data = {}
